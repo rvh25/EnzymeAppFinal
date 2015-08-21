@@ -28,11 +28,9 @@ class GameViewController : UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //Configure the view
         let skView = view as! SKView
         skView.multipleTouchEnabled = false
         
-        //Create and configure the scene.
         scene = GameScene(size: skView.bounds.size)
         scene.scaleMode = .AspectFill
         
@@ -40,7 +38,6 @@ class GameViewController : UIViewController {
         scene.level = level
         scene.swipeHandler = handleSwipe
         
-        //Present the scene
         skView.presentScene(scene)
         
         beginGame()
@@ -56,65 +53,17 @@ class GameViewController : UIViewController {
         scene.addSpritesForComponents(newComponents)
     }
     
+    // Swipe handler
     func handleSwipe(swap:Swap) {
+        // User cannot interact with the screen as swaps are being performed
         view.userInteractionEnabled = false
         
         if level.isPossibleSwap(swap) {
             level.performSwap(swap)
-        /*scene.animateSwap(swap){
-            self.view.userInteractionEnabled = true
-        }*/
-            scene.animateSwap(swap, completion: handleRxns)
-            /*scene.animateSwap(swap, completion:
-                {
-                self.view.userInteractionEnabled = true
-            })*/
-        } else {
-            //scene.direction()
-            //beginNextTurn()
-            //scene.animateInvalidSwap(swap) {
-                self.view.userInteractionEnabled = true
-            
-            //}
-        }
-        
-    }
-    
-    /*func handleRxns() {
-        let rxns = level.removepieces(component1: Component, component2: Component)
-        scene.removecomponents(rxns)
-    }*/
-    
-    func handleRxns() {
-        let rxns = level.removeRxns()
-        if rxns.count == 0 {
-            beginNextTurn()
-            return
-        }
-        scene.animateRxnComponents(rxns) {
-            self.handleRxns()
-            //self.view.userInteractionEnabled = true
-            /*let columns = self.level.newcomponents(columns) {
-                self.scene.animateNewComponents(columns) {
-                    self.handleRxns()
-                }
-            }*/
-        }
-    }
-    
-    /*func handleRxns() {
-        let columns = self.level.newcomponents()
-        self.scene.animateNewComponents(columns) {
-            self.view.userInteractionEnabled = true
-        }
-    }*/
-    
-    
-    
-    func beginNextTurn() {
-        level.detectPossibleSwaps()
-        view.userInteractionEnabled = true
-    }
-    
 
+            scene.animateSwap(swap, completion:
+                {self.view.userInteractionEnabled = true})
+        }
+    }
+    
 }

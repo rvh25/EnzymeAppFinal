@@ -18,9 +18,6 @@ class GameScene: SKScene {
         super.init(size: size)
 
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
-
-        //let background = SKSpriteNode(imageNamed: "Background")
-        //addChild(background)
         
         addChild(gameLayer)
         
@@ -36,229 +33,235 @@ class GameScene: SKScene {
         
     }
 
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
-        let touch = touches.anyObject() as! UITouch
-        let location = touch.locationInNode(componentsLayer)
-        /*let (success, column, row) = convertPoint(location)
-        if success {
-            if let component = level.componentAtColumn(column, row: row) {
-                swipeFromColumn = column
-                swipeFromRow = row
-            }
-        }*/
-        self.direction()
+    // When the user first touches the screen, the react function then runs
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        self.react()
     }
+    
+    // React initiates the process of swapping the components
+    func react() {
+        //First calls direction which determines a possible direction for enzyme components to swap to
+        self.direction()
+        
+        // After completing swaps, and components are reverted back, detectPossibleSwaps then lists if there are any possible swaps left
+        level.detectPossibleSwaps()
+        
+        // Checkswaps from Level then determines if there are zero swaps
+        // If checkswaps is true, the function exits
+        if level.checkswaps() {
+           /* if othertype() {
+                level.otherComponents()
+            }
+            
+            else {
+                return
+            }*/
+            return
+        }
+        
+        // If checkswaps is false, then the system repeats until there are no remaining swaps
+            else {
+            self.react()
+        }
+    }
+
+    // Checks for substrates
+    func subs() -> Bool {
+        let type = ComponentType.Substrate
+        
+        for row in 0..<NumRows {
+            for column in 0..<NumColumns {
+                if let component = level.componentAtColumn(column, row: row){
+                    if component.componentType == type {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    //Checks for components: Substrate, Competitive Inhibitor, Noncompetitive Inhibitor, Deactivator, and Activator
+    func othertype() -> Bool {
+        let type = ComponentType.Enzyme
+        let type2 = ComponentType.Product
+
+        
+        for row in 0..<NumRows {
+            for column in 0..<NumColumns {
+                if let component = level.componentAtColumn(column, row: row){
+                    if component.componentType != type && component.componentType != type2 {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+    
+    // For each enzyme component, randomly decides a direction to react with another component, above, below, or next to it
     func direction() {
         for row in 0..<NumRows {
             for column in 0..<NumColumns {
-                swipeFromColumn = column
-                swipeFromRow = row
-                
-                var horzDelta = 0, vertDelta = 0
-                if row == 0 && column == 0 {
-                    let dataConverter = Int(arc4random_uniform(2)+1)
-                    if dataConverter == 1 {
-                        horzDelta = 1
-                    }
-                    else if dataConverter == 2 {
-                        vertDelta = 1
-                    }
-                    
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                }
+                if let component = level.componentAtColumn(column, row: row) {
+                        if component.componentType == ComponentType.Enzyme  {
 
-                if row == NumRows - 1 && column == NumColumns - 1 {
-                    let dataConverter = Int(arc4random_uniform(2)+1)
-                    if dataConverter == 1 {
-                        horzDelta = -1
-                    }
-                    else if dataConverter == 2 {
-                        vertDelta = -1
-                    }
-                    
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                }
+                        print("component: \(component.componentType, component.column, component.row)")
+                        
+                        swipeFromColumn = component.column
+                        swipeFromRow = component.row
 
-                if row == 0 && column == NumColumns - 1 {
-                    let dataConverter = Int(arc4random_uniform(2)+1)
-                    if dataConverter == 1 {
-                        horzDelta = -1
-                    }
-                    else if dataConverter == 2 {
-                        vertDelta = 1
-                    }
-                    
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                }
-
-                if row == NumRows - 1 && column == 0 {
-                    let dataConverter = Int(arc4random_uniform(2)+1)
-                    if dataConverter == 1 {
-                        horzDelta = 1
-                    }
-                    else if dataConverter == 2 {
-                        vertDelta = -1
-                    }
-                    
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                }
                 
-                else if row == 0 {
-                    let dataConverter = Int(arc4random_uniform(3)+1)
-                    if dataConverter == 1 {
-                        horzDelta = -1
+                        var horzDelta = 0, vertDelta = 0
+                        if row == 0 && column == 0 {
+                            let dataConverter = Int(arc4random_uniform(2)+1)
+                            if dataConverter == 1 {
+                                horzDelta = 1
+                            }
+                            else if dataConverter == 2 {
+                                vertDelta = 1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
+                            
+                        else if row == NumRows - 1 && column == NumColumns - 1 {
+                            let dataConverter = Int(arc4random_uniform(2)+1)
+                            if dataConverter == 1 {
+                                horzDelta = -1
+                            }
+                            else if dataConverter == 2 {
+                                vertDelta = -1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
+                            
+                        else if row == 0 && column == NumColumns - 1 {
+                            let dataConverter = Int(arc4random_uniform(2)+1)
+                            if dataConverter == 1 {
+                                horzDelta = -1
+                            }
+                            else if dataConverter == 2 {
+                                vertDelta = 1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
+                            
+                        else if row == NumRows - 1 && column == 0 {
+                            let dataConverter = Int(arc4random_uniform(2)+1)
+                            if dataConverter == 1 {
+                                horzDelta = 1
+                            }
+                            else if dataConverter == 2 {
+                                vertDelta = -1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
+                            
+                        else if row == 0 && column != 0 && column != NumColumns - 1 {
+                            let dataConverter = Int(arc4random_uniform(3)+1)
+                            if dataConverter == 1 {
+                                horzDelta = -1
+                            }
+                            else if dataConverter == 2 {
+                                horzDelta = 1
+                            }
+                            else if dataConverter == 3 {
+                                vertDelta = 1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
+                            
+                        else if row == NumRows - 1 && column != 0 && column != NumColumns - 1 {
+                            let dataConverter = Int(arc4random_uniform(3)+1)
+                            if dataConverter == 1 {
+                                horzDelta = -1
+                            }
+                            else if dataConverter == 2 {
+                                horzDelta = 1
+                            }
+                            else if dataConverter == 3 {
+                                vertDelta = -1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
+                            
+                        else if column == 0 && row != 0 && row != NumRows - 1 {
+                            let dataConverter = Int(arc4random_uniform(3)+1)
+                            if dataConverter == 1 {
+                                horzDelta = 1
+                            }
+                            else if dataConverter == 2 {
+                                vertDelta = -1
+                            }
+                            else if dataConverter == 3 {
+                                vertDelta = 1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
+                            
+                        else if column == NumColumns - 1 && row != 0 && row != NumRows - 1 {
+                            let dataConverter = Int(arc4random_uniform(3)+1)
+                            if dataConverter == 1 {
+                                horzDelta = -1
+                            }
+                            else if dataConverter == 2 {
+                                vertDelta = -1
+                            }
+                            else if dataConverter == 3 {
+                                vertDelta = 1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
+                            
+                        else {
+                            let dataConverter = Int(arc4random_uniform(4)+1)
+                            if dataConverter == 1 {
+                                horzDelta = -1
+                            }
+                            else if dataConverter == 2 {
+                                horzDelta = 1
+                            }
+                            else if dataConverter == 3 {
+                                vertDelta = -1
+                            }
+                            else if dataConverter == 4 {
+                                vertDelta = 1
+                            }
+                            print("dataConverter: \(dataConverter)")
+                            print("horzDelta, vertDelta: \(horzDelta, vertDelta)")
+                            trySwap(horzDelta, vertical: vertDelta)
+                        }
                     }
-                    else if dataConverter == 2 {
-                        horzDelta = 1
-                    }
-                    else if dataConverter == 3 {
-                        vertDelta = 1
-                    }
-                    
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                }
-
-                else if row == NumRows - 1 {
-                    let dataConverter = Int(arc4random_uniform(3)+1)
-                    if dataConverter == 1 {
-                        horzDelta = -1
-                    }
-                    else if dataConverter == 2 {
-                        horzDelta = 1
-                    }
-                    else if dataConverter == 3 {
-                    vertDelta = -1
-                }
-            
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                }
-
-                else if column == 0 {
-                    let dataConverter = Int(arc4random_uniform(3)+1)
-                    if dataConverter == 1 {
-                        horzDelta = 1
-                    }
-                    else if dataConverter == 2 {
-                        vertDelta = -1
-                    }
-                    else if dataConverter == 3 {
-                        vertDelta = 1
-                    }
-                    
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                }
-                
-                else if column == NumColumns - 1 {
-                    let dataConverter = Int(arc4random_uniform(3)+1)
-                    if dataConverter == 1 {
-                        horzDelta = -1
-                    }
-                    else if dataConverter == 2 {
-                        vertDelta = -1
-                    }
-                    else if dataConverter == 3 {
-                        vertDelta = 1
-                    }
-                    
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                }
-                
-                else {
-                    let dataConverter = Int(arc4random_uniform(4)+1)
-                    if dataConverter == 1 {
-                        horzDelta = -1
-                    }
-                    else if dataConverter == 2 {
-                        horzDelta = 1
-                    }
-                    else if dataConverter == 3 {
-                        vertDelta = -1
-                    }
-                    else if dataConverter == 4 {
-                        vertDelta = 1
-                    }
-                
-                    trySwapHorizontal(horzDelta, vertical: vertDelta)
                 }
             }
         }
     }
-        
-        /*for row in 0..<NumRows {
-            for column in 0..<NumColumns {
-            swipeFromColumn = column
-            swipeFromRow = row
-            
-            var horzDelta = 0, vertDelta = 0
-            var dataConverter = Int(arc4random_uniform(4)+1)
-            if dataConverter == 1 {
-                horzDelta = -1
-            }
-            else if dataConverter == 2 {
-                horzDelta = 1
-            }
-            else if dataConverter == 3 {
-                vertDelta = -1
-            }
-            else if dataConverter == 4 {
-                vertDelta = 1
-            }
-            
-            trySwapHorizontal(horzDelta, vertical: vertDelta)
-                
-            }
-        }
-    }*/
     
-    
-    /*override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
-        let touch = touches.anyObject() as UITouch
-        let location = touch.locationInNode(componentsLayer)
-        let (success, column, row) = convertPoint(location)
-        if success {
-            if let component = level.componentAtColumn(column, row: row) {
-                swipeFromColumn = column
-                swipeFromRow = row
-            }
-        }
-    }*/
-    
-    /*override func touchesMoved(touches: NSSet, withEvent event: UIEvent) {
-        if swipeFromColumn == nil { return }
-        
-        let touch = touches.anyObject() as UITouch
-        let location = touch.locationInNode(componentsLayer)
-        
-        let (success, column, row) = convertPoint(location)
-        if success {
-            var horzDelta = 0, vertDelta = 0
-            if column < swipeFromColumn! {
-                horzDelta = -1
-            } else if column > swipeFromColumn! {
-                horzDelta = 1
-            } else if row < swipeFromRow! {
-                vertDelta = -1
-            } else if row > swipeFromRow! {
-                vertDelta = 1
-            }
-            
-            if horzDelta != 0 || vertDelta != 0 {
-                trySwapHorizontal(horzDelta, vertical: vertDelta)
-                swipeFromColumn = nil
-            }
-        }
-    }*/
-    
-    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+    /*override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         swipeFromColumn = nil
         swipeFromRow = nil
     }
-    
-    override func touchesCancelled(touches: NSSet, withEvent event: UIEvent) {
-        touchesEnded(touches, withEvent: event)
-    }
-    
-    
+
+    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        touchesEnded(touches!, withEvent: event)
+    }*/
+
     var swipeHandler: ((Swap) -> ())?
     
     var swipeFromColumn: Int?
@@ -272,6 +275,7 @@ class GameScene: SKScene {
     let gameLayer = SKNode()
     let componentsLayer = SKNode()
     
+    // A new sprite is created for each component and then added to the componentsLayer
     func addSpritesForComponents(components: Set<Component>) {
         for component in components {
             let sprite = SKSpriteNode(imageNamed: component.componentType.spriteName)
@@ -281,12 +285,14 @@ class GameScene: SKScene {
         }
     }
     
+    // CGPoints x and y are CGFloat types, while NumColumns and NumRows are Int types. Each column and row Int value will be converted to a CGPoint relative to the componentsLayer
     func pointForColumn(column: Int, row: Int) -> CGPoint {
         return CGPoint(
             x: CGFloat(column)*TileWidth + TileWidth/2,
             y: CGFloat(row)*TileHeight + TileHeight/2)
     }
     
+    // Opposite of pointForColumn, where a CGPoint relative to the componentsLayer is converted into column and row Int values. The boolean indicates success or failure. Failure is returned if the location is invalid in the componentsLayer.
     func convertPoint(point: CGPoint) -> (success: Bool, column: Int, row: Int) {
         if point.x >= 0 && point.x < CGFloat(NumColumns)*TileWidth &&
             point.y >= 0 && point.y < CGFloat(NumRows)*TileHeight {
@@ -296,189 +302,64 @@ class GameScene: SKScene {
         }
     }
     
-    func trySwapHorizontal(horzDelta: Int, vertical vertDelta: Int) {
+    // Determines if the swap is possible. If the swap is possible then the swap is performed.
+    func trySwap(horzDelta: Int, vertical vertDelta: Int) {
         let toColumn = swipeFromColumn! + horzDelta
         let toRow = swipeFromRow! + vertDelta
-        
-        if toColumn < 0 || toColumn >= NumColumns { return }
-        if toRow < 0 || toRow >= NumRows {return}
-        
-        let type = ComponentType.Enzyme
         
         if let toComponent = level.componentAtColumn(toColumn, row: toRow) {
             if let fromComponent = level.componentAtColumn(swipeFromColumn!, row: swipeFromRow!) {
                 
-                if fromComponent.componentType == type {
+                // If fromComponent is an enzyme and toComponent is not an enzyme then the swap is possible
+                if fromComponent.componentType == ComponentType.Enzyme && toComponent.componentType != ComponentType.Enzyme{
+                    
+                    print("fromComponent: \(fromComponent.componentType, fromComponent.column, fromComponent.row )")
+                    print("toComponent: \(toComponent.componentType, toComponent.column, toComponent.row)")
+                    
                     if let handler = swipeHandler {
                         let swap = Swap(componentA: fromComponent, componentB: toComponent)
                         handler(swap)
+                        
+                        print("afterswapfromComponent: \(fromComponent.componentType, fromComponent.column, fromComponent.row )")
+                        print("afterswaptoComponent: \(toComponent.componentType, toComponent.column, toComponent.row)")
+
+                        // Removepieces defines the sprites as nil.
+                        // Removecomponents removes the sprites.
+                        // Combinedcomponent defines the sprite of a new component, either enzyme substrate complex, enzyme with an inhibitor, enzyme with an activator, or enzyme with a deactivator
                         level.removepieces(fromComponent, component2: toComponent)
                         self.removecomponents(fromComponent, component2: toComponent)
                         self.combinedcomponent(fromComponent, component2: toComponent)
-                        
-                        //self.direction()
-                        
-                        //self.nosubstrates()
-                        
-                        //level.shufflepieces()
-                        //self.animateshuffle(fromComponent, component2: toComponent)
-                        //self.shuffling()
-                        //let columns = level.pieces()
-                        //self.animateshuffle(columns) {
-                        //}
-                       
-                       
+
                     }
                 }
             }
         }
     }
-    
-    /*func animateshuffle(component1:Component, component2: Component) {
-        level.shufflepieces(component1)
-        level.shufflepieces(component2)
 
-            if let sprite1 = component1.sprite {
-                if sprite1.actionForKey("removing") == nil {
-                    let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                    scaleAction.timingMode = .EaseOut
-                    sprite1.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                        withKey:"removing")
-                }
-            }
+    // Animates the sprites swapping
+    func animateSwap(swap: Swap, completion: () -> ()) {
+        //  let spriteA = swap.componentA.sprite!
+        if let spriteA = swap.componentA.sprite {
             
-            if let sprite2 = component2.sprite {
-                if sprite2.actionForKey("removing") == nil {
-                    let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                    scaleAction.timingMode = .EaseOut
-                    sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                        withKey:"removing")
-                }
-            }
-        
-            sprite.position = pointForColumn(component1.column, row: component1.row)
-            componentsLayer.addChild(sprite)
-            newcomponent2.sprite = sprite
+            let spriteB = swap.componentB.sprite!
             
-            let newPosition = pointForColumn(component.column, row: component.row)
-            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-            moveAction.timingMode = .EaseOut
-            sprite.alpha = 0
-            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-
-        
-        func addSpritesForComponents(components: Set<Component>) {
-            for component in components {
-                let sprite = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                sprite.position = pointForColumn(component.column, row:component.row)
-                componentsLayer.addChild(sprite)
-                component.sprite = sprite
-            }
+            
+            spriteA.zPosition = 90
+            spriteB.zPosition = 100
+            
+            let Duration: NSTimeInterval = 1.5
+            
+            let moveA = SKAction.moveTo(spriteB.position, duration: Duration)
+            moveA.timingMode = .EaseOut
+            spriteA.runAction(moveA, completion: completion)
+            
+            let moveB = SKAction.moveTo(spriteA.position, duration: Duration)
+            moveB.timingMode = .EaseOut
+            spriteB.runAction(moveB)
         }
-        
-    }*/
-    
-   /* func animateshuffle() {
-        for column in 0..<NumColumns {
-            for row in 0..<NumRows {
-                let component = level.componentAtColumn(column, row: row)
-                self.addSpritesForComponents
-                    for component in components {
-                        let sprite = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                        sprite.position = pointForColumn(component.column, row:component.row)
-                        componentsLayer.addChild(sprite)
-                        component.sprite = sprite
-                    }
-                }
-                
-            //let newcomponent = Component(column: column, row: row, componentType: component.componentType)
-            let sprite = component?.sprite
-                /*let sprite = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                sprite.position = pointForColumn(column, row: row)
-                componentsLayer.addChild(sprite)
-                component.sprite = sprite*/
-                
-                        /*let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                        scaleAction.timingMode = .EaseOut
-                        sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                            withKey:"removing")*/
-                
-                scene.removeAllComponentSprites()
-                
-                /*sprite.position = pointForColumn(component.column, row: component.row)
-                componentsLayer.addChild(sprite)
-                component.sprite = sprite*/
-                
-                var newcol = Int(arc4random_uniform(9))
-                var newrow = Int(arc4random_uniform(9))
-                
-                let newPosition = pointForColumn(newcol, row: newrow)
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite.alpha = 0
-                sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                
-                
-
-            }
-        }*/
-    
-    /*func shuffling() {
-        //component.column = 0;
-        //component.row = 0;
-        for first in stride(from: NumColumns - 1, through: 1, by: -1) {
-            let second = Int(arc4random_uniform(UInt32(first + 1)))
- 
-            for third in stride(from: NumRows - 1, through: 1, by: -1) {
-                let fourth = Int(arc4random_uniform(UInt32(third + 1)))
-            let temp = level.componentAtColumn(first, row: third)
-            level.componentAtColumn(first, row: third) == level.componentAtColumn(second, row: fourth)
-            level.componentAtColumn(second, row: fourth) == temp
-                
-                let component = level.componentAtColumn(first, row: third)
-                
-                
-                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                scaleAction.timingMode = .EaseOut
-                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                withKey:"removing")
-                
-                //scene.removeAllComponentSprites()
-                
-                /*sprite.position = pointForColumn(component.column, row: component.row)
-                componentsLayer.addChild(sprite)
-                component.sprite = sprite*/
-                
-                let newPosition = pointForColumn(second, row: fourth)
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite.alpha = 0
-                sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-            }
-        }
-    }*/
-    
-    func animateshuffle(columns: [[Component]], completion: () -> ()) {
-        for array in columns {
-            for (idx, component) in array.enumerate() {
-                let newPosition = pointForColumn(component.column, row: component.row)
-                let sprite = component.sprite!
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite.runAction(
-                    SKAction.sequence([
-                        SKAction.waitForDuration(0.5),
-                        SKAction.group([moveAction])]))
-                
-            }
-        }
-    runAction(SKAction.waitForDuration(0.5), completion: completion)
-    }
-
-    func removeAllComponentSprites() {
-        componentsLayer.removeAllChildren()
     }
     
+    // Removes sprites
     func removecomponents(component1: Component, component2: Component) {
         if component1.componentType == ComponentType.Enzyme {
             if let sprite1 = component1.sprite {
@@ -501,2350 +382,822 @@ class GameScene: SKScene {
         }
     }
     
-    func productpiece(component: Component) {
-        if component.componentType == ComponentType.ESComplex {
-
-            let newcomponentType2 = ComponentType.Product
-            let newcomponent2 = Component(column: component.column, row: component.row, componentType: newcomponentType2)
-            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-            sprite.position = pointForColumn(component.column, row: component.row)
-            componentsLayer.addChild(sprite)
-            newcomponent2.sprite = sprite
-                
-            let newPosition = pointForColumn(component.column, row: component.row)
-            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-            moveAction.timingMode = .EaseOut
-            sprite.alpha = 0
-            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-
+    // Defines the intermediate
+    // For noncompetitive inhibitor and activator cases, other functions are called to determine if the sprites can be reacted again into enzyme with noncompetitive inhibitor and substrate, enzyme with an activator and substrate, enzyme with two activators, or enzymes with two activators and substrate
+    func combinedcomponent(component1: Component, component2: Component) {
+        if component1.componentType == ComponentType.Enzyme {
+            if component2.componentType == ComponentType.Substrate {
+                // Enzyme substrate complex
+                combinedpiece(component1, newcomponentType: ComponentType.ESComplex, appear: 2, disappear: 4)
+                // Revert to enzyme and product components
+                revertcomponents(component1, component2: component2)
+            }
+            
+            if component2.componentType == ComponentType.Competitive_Inhibitor {
+                // Enzyme with competitive inhibitor
+                combinedpiece(component1, newcomponentType: ComponentType.Enzyme_with_Competitive_Inhibitor, appear: 2, disappear: 4)
+                // Revert back to enzyme and competitive inhibitor components
+                revertcomponents(component1, component2: component2)
+            }
+            
+            if component2.componentType == ComponentType.Deactivator {
+                // Enzyme with deactivator
+                combinedpiece(component1, newcomponentType: ComponentType.Enzyme_with_deactivator, appear: 2, disappear: 4)
+                // Revert back to enzyme and deactivator components
+                revertcomponents(component1, component2: component2)
+            }
+            
+            if component2.componentType == ComponentType.Noncompetitive_Inhibitor {
+                // Enzyme with noncompetitive inhibitor
+                noncompetitiveinhibitor(component1, component2: component2)
+            }
+            
+            if component2.componentType == ComponentType.Activator {
+                // Enzyme with one activator
+                activator(component1, component2: component2)
+            }
         }
     }
     
+    // Creates sprite for the intermediate
+    // The sprite's position is defined by the input component's position and the componentType is the input component's componentType. 
+    // The combinedcomponent sprite should appear and be removed after a specified time
+    func combinedpiece(component: Component, newcomponentType: ComponentType, appear: NSTimeInterval, disappear: NSTimeInterval) {
+        
+        let newcomponent = Component(column: component.column, row: component.row, componentType: newcomponentType)
+        
+        let sprite = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
+        sprite.position = pointForColumn(component.column, row: component.row)
+        componentsLayer.addChild(sprite)
+        newcomponent.sprite = sprite
+        
+        let newPosition = pointForColumn(component.column, row: component.row)
+        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
+        moveAction.timingMode = .EaseOut
+        sprite.alpha = 0
+        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(appear), SKAction.fadeInWithDuration(0.25), moveAction]))
+        
+        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
+        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(disappear), scaleAction, SKAction.removeFromParent()]),
+            
+            withKey:"removing")
+    }
+    
+    // level.components creates an array of the enzyme locations and then components are reverted back to the starting positions
+    func revertcomponents(component1: Component, component2: Component) {
+        level.components(component1, component2: component2)
+        revert(component1, component2: component2)
+    }
+    
+    // Uses components function to create sprites based on the original component1 and component2
     func revert(component1: Component, component2: Component) {
         if component1.componentType == ComponentType.Enzyme {
             if component2.componentType == ComponentType.Substrate {
-            
-                let componentType = ComponentType.Enzyme
-                let component = Component(column: component1.column, row: component1.row, componentType: componentType)
-                let sprite1 = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                sprite1.position = pointForColumn(component1.column, row: component1.row)
-                componentsLayer.addChild(sprite1)
-                component.sprite = sprite1
-                
-                let newPosition1 = pointForColumn(component1.column, row: component1.row)
-                let moveAction1 = SKAction.moveTo(newPosition1, duration: 0.3)
-                moveAction1.timingMode = .EaseOut
-                sprite1.alpha = 0
-                sprite1.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction1])]))
-                
-                let newcomponentType = ComponentType.Product
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                let sprite2 = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite2.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite2)
-                newcomponent.sprite = sprite2
-            
-                let newPosition2 = pointForColumn(component2.column, row: component2.row)
-                let moveAction2 = SKAction.moveTo(newPosition2, duration: 0.3)
-                moveAction2.timingMode = .EaseOut
-                sprite2.alpha = 0
-                sprite2.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction2])]))
-                //self.recurse()
+                //Enzyme and Product
+                components(component1, component2: component2, componentType: ComponentType.Enzyme, newcomponentType: ComponentType.Product)
             }
             
             if component2.componentType == ComponentType.Competitive_Inhibitor{
-                
-                let componentType = ComponentType.Enzyme
-                let component = Component(column: component1.column, row: component1.row, componentType: componentType)
-                let sprite1 = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                sprite1.position = pointForColumn(component1.column, row: component1.row)
-                componentsLayer.addChild(sprite1)
-                component.sprite = sprite1
-                
-                let newPosition1 = pointForColumn(component1.column, row: component1.row)
-                let moveAction1 = SKAction.moveTo(newPosition1, duration: 0.3)
-                moveAction1.timingMode = .EaseOut
-                sprite1.alpha = 0
-                sprite1.runAction(SKAction.sequence([SKAction.waitForDuration(6), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction1])]))
-                
-                let newcomponentType = ComponentType.Competitive_Inhibitor
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                let sprite2 = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite2.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite2)
-                newcomponent.sprite = sprite2
-                
-                let newPosition2 = pointForColumn(component2.column, row: component2.row)
-                let moveAction2 = SKAction.moveTo(newPosition2, duration: 0.3)
-                moveAction2.timingMode = .EaseOut
-                sprite2.alpha = 0
-                sprite2.runAction(SKAction.sequence([SKAction.waitForDuration(6), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction2])]))
+                //Enzyme and Competitive Inhibitor
+                components(component1, component2: component2, componentType: ComponentType.Enzyme, newcomponentType: ComponentType.Competitive_Inhibitor)
             }
             
             if component2.componentType == ComponentType.Deactivator {
-                
-                let componentType = ComponentType.Enzyme
-                let component = Component(column: component1.column, row: component1.row, componentType: componentType)
-                let sprite1 = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                sprite1.position = pointForColumn(component1.column, row: component1.row)
-                componentsLayer.addChild(sprite1)
-                component.sprite = sprite1
-                
-                let newPosition1 = pointForColumn(component1.column, row: component1.row)
-                let moveAction1 = SKAction.moveTo(newPosition1, duration: 0.3)
-                moveAction1.timingMode = .EaseOut
-                sprite1.alpha = 0
-                sprite1.runAction(SKAction.sequence([SKAction.waitForDuration(4.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction1])]))
-                
-                let newcomponentType = ComponentType.Deactivator
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                let sprite2 = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite2.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite2)
-                newcomponent.sprite = sprite2
-                
-                let newPosition2 = pointForColumn(component2.column, row: component2.row)
-                let moveAction2 = SKAction.moveTo(newPosition2, duration: 0.3)
-                moveAction2.timingMode = .EaseOut
-                sprite2.alpha = 0
-                sprite2.runAction(SKAction.sequence([SKAction.waitForDuration(4.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction2])]))
+                //Enzyme and Deactivator
+                components(component1, component2: component2, componentType: ComponentType.Enzyme, newcomponentType: ComponentType.Deactivator)
             }
             
             if component2.componentType == ComponentType.Noncompetitive_Inhibitor {
-                
-                let componentType = ComponentType.Enzyme
-                let component = Component(column: component1.column, row: component1.row, componentType: componentType)
-                let sprite1 = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                sprite1.position = pointForColumn(component1.column, row: component1.row)
-                componentsLayer.addChild(sprite1)
-                component.sprite = sprite1
-                
-                let newPosition1 = pointForColumn(component1.column, row: component1.row)
-                let moveAction1 = SKAction.moveTo(newPosition1, duration: 0.3)
-                moveAction1.timingMode = .EaseOut
-                sprite1.alpha = 0
-                sprite1.runAction(SKAction.sequence([SKAction.waitForDuration(5.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction1])]))
-                
-                let newcomponentType = ComponentType.Noncompetitive_Inhibitor
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                let sprite2 = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite2.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite2)
-                newcomponent.sprite = sprite2
-                
-                let newPosition2 = pointForColumn(component2.column, row: component2.row)
-                let moveAction2 = SKAction.moveTo(newPosition2, duration: 0.3)
-                moveAction2.timingMode = .EaseOut
-                sprite2.alpha = 0
-                sprite2.runAction(SKAction.sequence([SKAction.waitForDuration(5.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction2])]))
+                //Enzyme and Noncompetitive Inhibitor
+                components(component1, component2: component2, componentType: ComponentType.Enzyme, newcomponentType: ComponentType.Noncompetitive_Inhibitor)
             }
             
             if component2.componentType == ComponentType.Activator {
-                
-                let componentType = ComponentType.Enzyme
-                let component = Component(column: component1.column, row: component1.row, componentType: componentType)
-                let sprite1 = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                sprite1.position = pointForColumn(component1.column, row: component1.row)
-                componentsLayer.addChild(sprite1)
-                component.sprite = sprite1
-                
-                let newPosition1 = pointForColumn(component1.column, row: component1.row)
-                let moveAction1 = SKAction.moveTo(newPosition1, duration: 0.3)
-                moveAction1.timingMode = .EaseOut
-                sprite1.alpha = 0
-                sprite1.runAction(SKAction.sequence([SKAction.waitForDuration(5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction1])]))
-                
-                let newcomponentType = ComponentType.Activator
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                let sprite2 = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite2.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite2)
-                newcomponent.sprite = sprite2
-                
-                let newPosition2 = pointForColumn(component2.column, row: component2.row)
-                let moveAction2 = SKAction.moveTo(newPosition2, duration: 0.3)
-                moveAction2.timingMode = .EaseOut
-                sprite2.alpha = 0
-                sprite2.runAction(SKAction.sequence([SKAction.waitForDuration(5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction2])]))
-            }
-
-        }
-        
-    }
-    
-    
-    
-    func combinedcomponent(component1: Component, component2: Component) {
-        if component1.componentType == ComponentType.Enzyme {
-            let time = 0.5
-            let delay = 0.5
-            
-            if component2.componentType == ComponentType.Substrate {
-                let newcomponentType = ComponentType.ESComplex
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                
-                let sprite = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite)
-                newcomponent.sprite = sprite
-                
-                let newPosition = pointForColumn(component2.column, row: component2.row)
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite.alpha = 0
-                sprite.runAction(SKAction.sequence([SKAction.fadeInWithDuration(0.05), moveAction]))
-               
-
-                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                sprite.runAction(SKAction.sequence([SKAction.waitForDuration(2), scaleAction, SKAction.removeFromParent()]),
-                        withKey:"removing")
-                //self.productpiece(newcomponent)
-                self.revert(component1, component2: component2)
-                
-            }
-
-        
-            if component2.componentType == ComponentType.Competitive_Inhibitor {
-                let newcomponentType = ComponentType.Enzyme_with_Competitive_Inhibitor
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                
-                let sprite = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite)
-                newcomponent.sprite = sprite
-                
-                let newPosition = pointForColumn(component2.column, row: component2.row)
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite.alpha = 0
-                sprite.runAction(SKAction.sequence([SKAction.fadeInWithDuration(time), moveAction]))
-                
-                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                sprite.runAction(SKAction.sequence([SKAction.waitForDuration(delay, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                    withKey:"removing")
-                self.revert(component1, component2: component2)
-            }
-            
-            if component2.componentType == ComponentType.Deactivator {
-                let newcomponentType = ComponentType.Enzyme_with_deactivator
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                
-                let sprite = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite)
-                newcomponent.sprite = sprite
-                
-                let newPosition = pointForColumn(component2.column, row: component2.row)
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite.alpha = 0
-                sprite.runAction(SKAction.sequence([SKAction.fadeInWithDuration(time), moveAction]))
-                
-                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                sprite.runAction(SKAction.sequence([SKAction.waitForDuration(delay, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                    withKey:"removing")
-                self.revert(component1, component2: component2)
-            }
-            
-            if component2.componentType == ComponentType.Noncompetitive_Inhibitor {
-                let newcomponentType = ComponentType.Enzyme_with_Noncompetitive_Inhibitor
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                
-                let sprite = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite)
-                newcomponent.sprite = sprite
-                
-                let newPosition = pointForColumn(component2.column, row: component2.row)
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite.alpha = 0
-                sprite.runAction(SKAction.sequence([SKAction.fadeInWithDuration(time), moveAction]))
-                
-                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                sprite.runAction(SKAction.sequence([SKAction.waitForDuration(delay, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                    withKey:"removing")
-                
-                if newcomponent.column != NumColumns - 1 {
-                if let othercomponent = level.componentAtColumn(newcomponent.column + 1, row: newcomponent.row) {
-                    if othercomponent.componentType == ComponentType.Substrate {
-                        if let sprite = newcomponent.sprite {
-                            //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                            //}
-                        }
-                        
-                        if let sprite2 = othercomponent.sprite {
-                            //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                            //}
-                        }
-                        let newcomponentType2 = ComponentType.Enzyme_with_Noncompetitive_Inhibitor_and_substrate
-                        let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                        let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                        sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                        componentsLayer.addChild(sprite)
-                        newcomponent2.sprite = sprite
-                        
-                        let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                        moveAction.timingMode = .EaseOut
-                        sprite.alpha = 0
-                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                        
-                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                            withKey:"removing")
-                        
-                        
-                        let componentAType = ComponentType.Enzyme
-                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                        componentsLayer.addChild(spriteA)
-                        componentA.sprite = spriteA
-                        
-                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                        moveActionA.timingMode = .EaseOut
-                        spriteA.alpha = 0
-                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                        
-                        let componentBType = ComponentType.Noncompetitive_Inhibitor
-                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                        componentsLayer.addChild(spriteB)
-                        componentB.sprite = spriteB
-                        
-                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                        moveActionB.timingMode = .EaseOut
-                        spriteB.alpha = 0
-                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                        
-                        let componentCType = ComponentType.Substrate
-                        let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                        spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                        componentsLayer.addChild(spriteC)
-                        componentC.sprite = spriteC
-                        
-                        let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                        moveActionC.timingMode = .EaseOut
-                        spriteC.alpha = 0
-                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-
-                    }
-                    
-                    else {
-                        self.revert(component1, component2: component2)
-                    }
-                }
-                }
-                
-                if newcomponent.column != 0 {
-                    
-                    if let othercomponent = level.componentAtColumn(newcomponent.column - 1, row: newcomponent.row) {
-                    if othercomponent.componentType == ComponentType.Substrate {
-                        if let sprite = newcomponent.sprite {
-                            //if sprite.actionForKey("removing") == nil {
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            scaleAction.timingMode = .EaseOut
-                            sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            //}
-                        }
-                        
-                        if let sprite2 = othercomponent.sprite {
-                            //if sprite2.actionForKey("removing") == nil {
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            scaleAction.timingMode = .EaseOut
-                            sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            //}
-                        }
-                        let newcomponentType2 = ComponentType.Enzyme_with_Noncompetitive_Inhibitor_and_substrate
-                        let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                        let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                        sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                        componentsLayer.addChild(sprite)
-                        newcomponent2.sprite = sprite
-                        
-                        let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                        moveAction.timingMode = .EaseOut
-                        sprite.alpha = 0
-                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                        
-                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                            withKey:"removing")
-                        
-                        
-                        let componentAType = ComponentType.Enzyme
-                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                        componentsLayer.addChild(spriteA)
-                        componentA.sprite = spriteA
-                        
-                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                        moveActionA.timingMode = .EaseOut
-                        spriteA.alpha = 0
-                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                        
-                        let componentBType = ComponentType.Noncompetitive_Inhibitor
-                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                        componentsLayer.addChild(spriteB)
-                        componentB.sprite = spriteB
-                        
-                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                        moveActionB.timingMode = .EaseOut
-                        spriteB.alpha = 0
-                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                        
-                        let componentCType = ComponentType.Substrate
-                        let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                        spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                        componentsLayer.addChild(spriteC)
-                        componentC.sprite = spriteC
-                        
-                        let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                        moveActionC.timingMode = .EaseOut
-                        spriteC.alpha = 0
-                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                    }
-                        
-                    else {
-                        self.revert(component1, component2: component2)
-                    }
-                    }
-                }
-                
-                if newcomponent.row != NumRows - 1 {
-                if let othercomponent = level.componentAtColumn(newcomponent.column, row: newcomponent.row + 1) {
-                    if othercomponent.componentType == ComponentType.Substrate {
-                        if let sprite = newcomponent.sprite {
-                            //if sprite.actionForKey("removing") == nil {
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            scaleAction.timingMode = .EaseOut
-                            sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            //}
-                        }
-                        
-                        if let sprite2 = othercomponent.sprite {
-                            //if sprite2.actionForKey("removing") == nil {
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            scaleAction.timingMode = .EaseOut
-                            sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            //}
-                        }
-                        let newcomponentType2 = ComponentType.Enzyme_with_Noncompetitive_Inhibitor_and_substrate
-                        let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                        let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                        sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                        componentsLayer.addChild(sprite)
-                        newcomponent2.sprite = sprite
-                        
-                        let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                        moveAction.timingMode = .EaseOut
-                        sprite.alpha = 0
-                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                        
-                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                            withKey:"removing")
-                        
-                        
-                        let componentAType = ComponentType.Enzyme
-                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                        componentsLayer.addChild(spriteA)
-                        componentA.sprite = spriteA
-                        
-                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                        moveActionA.timingMode = .EaseOut
-                        spriteA.alpha = 0
-                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                        
-                        let componentBType = ComponentType.Noncompetitive_Inhibitor
-                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                        componentsLayer.addChild(spriteB)
-                        componentB.sprite = spriteB
-                        
-                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                        moveActionB.timingMode = .EaseOut
-                        spriteB.alpha = 0
-                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                        
-                        let componentCType = ComponentType.Substrate
-                        let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                        spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                        componentsLayer.addChild(spriteC)
-                        componentC.sprite = spriteC
-                        
-                        let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                        moveActionC.timingMode = .EaseOut
-                        spriteC.alpha = 0
-                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                    }
-                        
-                    else {
-                        self.revert(component1, component2: component2)
-                    }
-                }
-                }
-                
-                if newcomponent.row != 0 {
-                if let othercomponent = level.componentAtColumn(newcomponent.column, row: newcomponent.row - 1) {
-                    if othercomponent.componentType == ComponentType.Substrate {
-                        if let sprite = newcomponent.sprite {
-                            //if sprite.actionForKey("removing") == nil {
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            scaleAction.timingMode = .EaseOut
-                            sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            //}
-                        }
-                        
-                        if let sprite2 = othercomponent.sprite {
-                            //if sprite2.actionForKey("removing") == nil {
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            scaleAction.timingMode = .EaseOut
-                            sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            //}
-                        }
-                        let newcomponentType2 = ComponentType.Enzyme_with_Noncompetitive_Inhibitor_and_substrate
-                        let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                        let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                        sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                        componentsLayer.addChild(sprite)
-                        newcomponent2.sprite = sprite
-                        
-                        let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                        moveAction.timingMode = .EaseOut
-                        sprite.alpha = 0
-                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                        
-                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                            withKey:"removing")
-                        
-                        
-                        let componentAType = ComponentType.Enzyme
-                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                        componentsLayer.addChild(spriteA)
-                        componentA.sprite = spriteA
-                        
-                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                        moveActionA.timingMode = .EaseOut
-                        spriteA.alpha = 0
-                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                        
-                        let componentBType = ComponentType.Noncompetitive_Inhibitor
-                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                        componentsLayer.addChild(spriteB)
-                        componentB.sprite = spriteB
-                        
-                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                        moveActionB.timingMode = .EaseOut
-                        spriteB.alpha = 0
-                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                        
-                        let componentCType = ComponentType.Substrate
-                        let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                        spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                        componentsLayer.addChild(spriteC)
-                        componentC.sprite = spriteC
-                        
-                        let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                        moveActionC.timingMode = .EaseOut
-                        spriteC.alpha = 0
-                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                    }
-                        
-                    else {
-                        self.revert(component1, component2: component2)
-                    }
-                }
-                }
-    
-            }
-            
-            if component2.componentType == ComponentType.Activator {
-                let newcomponentType = ComponentType.Enzyme_with_one_activator
-                let newcomponent = Component(column: component2.column, row: component2.row, componentType: newcomponentType)
-                
-                let sprite = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite.position = pointForColumn(component2.column, row: component2.row)
-                componentsLayer.addChild(sprite)
-                newcomponent.sprite = sprite
-                
-                let newPosition = pointForColumn(component2.column, row: component2.row)
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite.alpha = 0
-                sprite.runAction(SKAction.sequence([SKAction.fadeInWithDuration(time), moveAction]))
-                
-                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                sprite.runAction(SKAction.sequence([SKAction.waitForDuration(delay, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                    withKey:"removing")
-                if newcomponent.column != NumColumns - 1 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column + 1, row: newcomponent.row) {
-                        if othercomponent.componentType == ComponentType.Substrate {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_one_activator_and_substrate
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            let componentAType = ComponentType.Enzyme
-                            let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                            let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                            spriteA.position = pointForColumn(component1.column, row: component1.row)
-                            componentsLayer.addChild(spriteA)
-                            componentA.sprite = spriteA
-                            
-                            let newPositionA = pointForColumn(component1.column, row: component1.row)
-                            let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                            moveActionA.timingMode = .EaseOut
-                            spriteA.alpha = 0
-                            spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                            let componentBType = ComponentType.Activator
-                            let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                            let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                            spriteB.position = pointForColumn(component2.column, row: component2.row)
-                            componentsLayer.addChild(spriteB)
-                            componentB.sprite = spriteB
-                            
-                            let newPositionB = pointForColumn(component2.column, row: component2.row)
-                            let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                            moveActionB.timingMode = .EaseOut
-                            spriteB.alpha = 0
-                            spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                            let componentCType = ComponentType.Substrate
-                            let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                            let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                            spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            componentsLayer.addChild(spriteC)
-                            componentC.sprite = spriteC
-                            
-                            let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                            moveActionC.timingMode = .EaseOut
-                            spriteC.alpha = 0
-                            spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                            
-                        }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                    }
-                }
-                
-                if newcomponent.column != 0 {
-                    
-                    if let othercomponent = level.componentAtColumn(newcomponent.column - 1, row: newcomponent.row) {
-                        if othercomponent.componentType == ComponentType.Substrate {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_one_activator_and_substrate
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            let componentAType = ComponentType.Enzyme
-                            let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                            let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                            spriteA.position = pointForColumn(component1.column, row: component1.row)
-                            componentsLayer.addChild(spriteA)
-                            componentA.sprite = spriteA
-                            
-                            let newPositionA = pointForColumn(component1.column, row: component1.row)
-                            let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                            moveActionA.timingMode = .EaseOut
-                            spriteA.alpha = 0
-                            spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                            let componentBType = ComponentType.Activator
-                            let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                            let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                            spriteB.position = pointForColumn(component2.column, row: component2.row)
-                            componentsLayer.addChild(spriteB)
-                            componentB.sprite = spriteB
-                            
-                            let newPositionB = pointForColumn(component2.column, row: component2.row)
-                            let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                            moveActionB.timingMode = .EaseOut
-                            spriteB.alpha = 0
-                            spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                            let componentCType = ComponentType.Substrate
-                            let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                            let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                            spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            componentsLayer.addChild(spriteC)
-                            componentC.sprite = spriteC
-                            
-                            let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                            moveActionC.timingMode = .EaseOut
-                            spriteC.alpha = 0
-                            spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                        }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                    }
-                }
-                
-                if newcomponent.row != NumRows - 1 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column, row: newcomponent.row + 1) {
-                        if othercomponent.componentType == ComponentType.Substrate {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_one_activator_and_substrate
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            let componentAType = ComponentType.Enzyme
-                            let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                            let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                            spriteA.position = pointForColumn(component1.column, row: component1.row)
-                            componentsLayer.addChild(spriteA)
-                            componentA.sprite = spriteA
-                            
-                            let newPositionA = pointForColumn(component1.column, row: component1.row)
-                            let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                            moveActionA.timingMode = .EaseOut
-                            spriteA.alpha = 0
-                            spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                            let componentBType = ComponentType.Activator
-                            let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                            let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                            spriteB.position = pointForColumn(component2.column, row: component2.row)
-                            componentsLayer.addChild(spriteB)
-                            componentB.sprite = spriteB
-                            
-                            let newPositionB = pointForColumn(component2.column, row: component2.row)
-                            let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                            moveActionB.timingMode = .EaseOut
-                            spriteB.alpha = 0
-                            spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                            let componentCType = ComponentType.Substrate
-                            let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                            let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                            spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            componentsLayer.addChild(spriteC)
-                            componentC.sprite = spriteC
-                            
-                            let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                            moveActionC.timingMode = .EaseOut
-                            spriteC.alpha = 0
-                            spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                        }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                    }
-                }
-                
-                if newcomponent.row != 0 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column, row: newcomponent.row - 1) {
-                        if othercomponent.componentType == ComponentType.Substrate {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_one_activator_and_substrate
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            let componentAType = ComponentType.Enzyme
-                            let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                            let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                            spriteA.position = pointForColumn(component1.column, row: component1.row)
-                            componentsLayer.addChild(spriteA)
-                            componentA.sprite = spriteA
-                            
-                            let newPositionA = pointForColumn(component1.column, row: component1.row)
-                            let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                            moveActionA.timingMode = .EaseOut
-                            spriteA.alpha = 0
-                            spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                            let componentBType = ComponentType.Activator
-                            let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                            let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                            spriteB.position = pointForColumn(component2.column, row: component2.row)
-                            componentsLayer.addChild(spriteB)
-                            componentB.sprite = spriteB
-                            
-                            let newPositionB = pointForColumn(component2.column, row: component2.row)
-                            let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                            moveActionB.timingMode = .EaseOut
-                            spriteB.alpha = 0
-                            spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                            let componentCType = ComponentType.Substrate
-                            let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                            let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                            spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            componentsLayer.addChild(spriteC)
-                            componentC.sprite = spriteC
-                            
-                            let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                            moveActionC.timingMode = .EaseOut
-                            spriteC.alpha = 0
-                            spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                        }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                    }
-                }
-                
-                
-                /*if newcomponent.column != NumColumns - 1 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column + 1, row: newcomponent.row) {
-                        if othercomponent.componentType == ComponentType.Activator {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_two_activators
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            let componentAType = ComponentType.Enzyme
-                            let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                            let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                            spriteA.position = pointForColumn(component1.column, row: component1.row)
-                            componentsLayer.addChild(spriteA)
-                            componentA.sprite = spriteA
-                            
-                            let newPositionA = pointForColumn(component1.column, row: component1.row)
-                            let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                            moveActionA.timingMode = .EaseOut
-                            spriteA.alpha = 0
-                            spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                            let componentBType = ComponentType.Activator
-                            let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                            let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                            spriteB.position = pointForColumn(component2.column, row: component2.row)
-                            componentsLayer.addChild(spriteB)
-                            componentB.sprite = spriteB
-                            
-                            let newPositionB = pointForColumn(component2.column, row: component2.row)
-                            let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                            moveActionB.timingMode = .EaseOut
-                            spriteB.alpha = 0
-                            spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                            let componentCType = ComponentType.Activator
-                            let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                            let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                            spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            componentsLayer.addChild(spriteC)
-                            componentC.sprite = spriteC
-                            
-                            let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                            moveActionC.timingMode = .EaseOut
-                            spriteC.alpha = 0
-                            spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                        }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                        
-                    }
-                }
-                
-                if newcomponent.column != 0 {
-                    
-                    if let othercomponent = level.componentAtColumn(newcomponent.column - 1, row: newcomponent.row) {
-                        if othercomponent.componentType == ComponentType.Activator {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_two_activators
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            let componentAType = ComponentType.Enzyme
-                            let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                            let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                            spriteA.position = pointForColumn(component1.column, row: component1.row)
-                            componentsLayer.addChild(spriteA)
-                            componentA.sprite = spriteA
-                            
-                            let newPositionA = pointForColumn(component1.column, row: component1.row)
-                            let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                            moveActionA.timingMode = .EaseOut
-                            spriteA.alpha = 0
-                            spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                            let componentBType = ComponentType.Activator
-                            let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                            let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                            spriteB.position = pointForColumn(component2.column, row: component2.row)
-                            componentsLayer.addChild(spriteB)
-                            componentB.sprite = spriteB
-                            
-                            let newPositionB = pointForColumn(component2.column, row: component2.row)
-                            let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                            moveActionB.timingMode = .EaseOut
-                            spriteB.alpha = 0
-                            spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                            let componentCType = ComponentType.Activator
-                            let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                            let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                            spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            componentsLayer.addChild(spriteC)
-                            componentC.sprite = spriteC
-                            
-                            let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                            moveActionC.timingMode = .EaseOut
-                            spriteC.alpha = 0
-                            spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                        }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                    }
-                }
-                
-                if newcomponent.row != NumRows - 1 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column, row: newcomponent.row + 1) {
-                        if othercomponent.componentType == ComponentType.Activator {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_two_activators
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            let componentAType = ComponentType.Enzyme
-                            let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                            let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                            spriteA.position = pointForColumn(component1.column, row: component1.row)
-                            componentsLayer.addChild(spriteA)
-                            componentA.sprite = spriteA
-                            
-                            let newPositionA = pointForColumn(component1.column, row: component1.row)
-                            let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                            moveActionA.timingMode = .EaseOut
-                            spriteA.alpha = 0
-                            spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                            let componentBType = ComponentType.Activator
-                            let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                            let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                            spriteB.position = pointForColumn(component2.column, row: component2.row)
-                            componentsLayer.addChild(spriteB)
-                            componentB.sprite = spriteB
-                            
-                            let newPositionB = pointForColumn(component2.column, row: component2.row)
-                            let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                            moveActionB.timingMode = .EaseOut
-                            spriteB.alpha = 0
-                            spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                            let componentCType = ComponentType.Activator
-                            let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                            let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                            spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            componentsLayer.addChild(spriteC)
-                            componentC.sprite = spriteC
-                            
-                            let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                            moveActionC.timingMode = .EaseOut
-                            spriteC.alpha = 0
-                            spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                        }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                    }
-                }
-                
-                if newcomponent.row != 0 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column, row: newcomponent.row - 1) {
-                        if othercomponent.componentType == ComponentType.Activator {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_two_activators
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            let componentAType = ComponentType.Enzyme
-                            let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                            let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                            spriteA.position = pointForColumn(component1.column, row: component1.row)
-                            componentsLayer.addChild(spriteA)
-                            componentA.sprite = spriteA
-                            
-                            let newPositionA = pointForColumn(component1.column, row: component1.row)
-                            let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                            moveActionA.timingMode = .EaseOut
-                            spriteA.alpha = 0
-                            spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                            let componentBType = ComponentType.Activator
-                            let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                            let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                            spriteB.position = pointForColumn(component2.column, row: component2.row)
-                            componentsLayer.addChild(spriteB)
-                            componentB.sprite = spriteB
-                            
-                            let newPositionB = pointForColumn(component2.column, row: component2.row)
-                            let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                            moveActionB.timingMode = .EaseOut
-                            spriteB.alpha = 0
-                            spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                            let componentCType = ComponentType.Activator
-                            let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                            let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                            spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            componentsLayer.addChild(spriteC)
-                            componentC.sprite = spriteC
-                            
-                            let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                            let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                            moveActionC.timingMode = .EaseOut
-                            spriteC.alpha = 0
-                            spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                        }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                    }
-                }*/
-                
-                
-                
-                if newcomponent.column != NumColumns - 1 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column + 1, row: newcomponent.row) {
-                        if othercomponent.componentType == ComponentType.Activator {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_two_activators
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            if newcomponent2.column != NumColumns - 1 {
-                                if let othercomponent2 = level.componentAtColumn(newcomponent2.column + 1, row: newcomponent2.row) {
-                                    if othercomponent2.componentType == ComponentType.Substrate {
-                                        if let sprite = newcomponent2.sprite {
-                                            //if sprite.actionForKey("removing") == nil {
-                                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                            scaleAction.timingMode = .EaseOut
-                                            sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                                withKey:"removing")
-                                            //}
-                                        }
-                                        
-                                        if let sprite2 = othercomponent2.sprite {
-                                            //if sprite2.actionForKey("removing") == nil {
-                                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                            scaleAction.timingMode = .EaseOut
-                                            sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                                withKey:"removing")
-                                            //}
-                                        }
-                                        
-                                        let newcomponentType3 = ComponentType.Enzyme_with_2_activators_and_substrate
-                                        let newcomponent3 = Component(column: newcomponent2.column, row: newcomponent2.row, componentType: newcomponentType3)
-                                        let sprite = SKSpriteNode(imageNamed: newcomponent3.componentType.spriteName)
-                                        sprite.position = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        componentsLayer.addChild(sprite)
-                                        newcomponent3.sprite = sprite
-                                        
-                                        let newPosition = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                                        moveAction.timingMode = .EaseOut
-                                        sprite.alpha = 0
-                                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                                        
-                                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                            withKey:"removing")
-                                        
-                                        
-                                        let componentAType = ComponentType.Enzyme
-                                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                                        componentsLayer.addChild(spriteA)
-                                        componentA.sprite = spriteA
-                                        
-                                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                                        moveActionA.timingMode = .EaseOut
-                                        spriteA.alpha = 0
-                                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                                        
-                                        let componentBType = ComponentType.Activator
-                                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                                        componentsLayer.addChild(spriteB)
-                                        componentB.sprite = spriteB
-                                        
-                                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                                        moveActionB.timingMode = .EaseOut
-                                        spriteB.alpha = 0
-                                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                                        
-                                        let componentCType = ComponentType.Activator
-                                        let componentC = Component(column: newcomponent2.column, row: newcomponent2.row, componentType: componentCType)
-                                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                                        spriteC.position = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        componentsLayer.addChild(spriteC)
-                                        componentC.sprite = spriteC
-                                        
-                                        let newPositionC = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                                        moveActionC.timingMode = .EaseOut
-                                        spriteC.alpha = 0
-                                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                                        
-                                        let componentDType = ComponentType.Substrate
-                                        let componentD = Component(column: othercomponent2.column, row: othercomponent2.row, componentType: componentDType)
-                                        let spriteD = SKSpriteNode(imageNamed: componentD.componentType.spriteName)
-                                        spriteD.position = pointForColumn(othercomponent2.column, row: othercomponent2.row)
-                                        componentsLayer.addChild(spriteD)
-                                        componentD.sprite = spriteD
-                                        
-                                        let newPositionD = pointForColumn(othercomponent2.column, row: othercomponent2.row)
-                                        let moveActionD = SKAction.moveTo(newPositionD, duration: 0.3)
-                                        moveActionD.timingMode = .EaseOut
-                                        spriteD.alpha = 0
-                                        spriteD.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionD])]))
-                                    }
-                                        
-                                    else {
-                                        
-                                        let componentAType = ComponentType.Enzyme
-                                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                                        componentsLayer.addChild(spriteA)
-                                        componentA.sprite = spriteA
-                                        
-                                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                                        moveActionA.timingMode = .EaseOut
-                                        spriteA.alpha = 0
-                                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                                        
-                                        let componentBType = ComponentType.Activator
-                                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                                        componentsLayer.addChild(spriteB)
-                                        componentB.sprite = spriteB
-                                        
-                                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                                        moveActionB.timingMode = .EaseOut
-                                        spriteB.alpha = 0
-                                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                                        
-                                        let componentCType = ComponentType.Activator
-                                        let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                                        spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                                        componentsLayer.addChild(spriteC)
-                                        componentC.sprite = spriteC
-                                        
-                                        let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                                        moveActionC.timingMode = .EaseOut
-                                        spriteC.alpha = 0
-                                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                                    }
-                                }
-                                    
-                                else {
-                                    self.revert(component1, component2: component2)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                
-                if newcomponent.column != 0 {
-                    
-                    if let othercomponent = level.componentAtColumn(newcomponent.column - 1, row: newcomponent.row) {
-                        if othercomponent.componentType == ComponentType.Activator {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_two_activators
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            if newcomponent2.column != 0 {
-                                if let othercomponent2 = level.componentAtColumn(newcomponent2.column - 1, row: newcomponent2.row) {
-                                    if othercomponent2.componentType == ComponentType.Substrate {
-                                        if let sprite = newcomponent2.sprite {
-                                            //if sprite.actionForKey("removing") == nil {
-                                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                            scaleAction.timingMode = .EaseOut
-                                            sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                                withKey:"removing")
-                                            //}
-                                        }
-                                        
-                                        if let sprite2 = othercomponent2.sprite {
-                                            //if sprite2.actionForKey("removing") == nil {
-                                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                            scaleAction.timingMode = .EaseOut
-                                            sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                                withKey:"removing")
-                                            //}
-                                        }
-                                        
-                                        let newcomponentType3 = ComponentType.Enzyme_with_2_activators_and_substrate
-                                        let newcomponent3 = Component(column: newcomponent2.column, row: newcomponent2.row, componentType: newcomponentType3)
-                                        let sprite = SKSpriteNode(imageNamed: newcomponent3.componentType.spriteName)
-                                        sprite.position = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        componentsLayer.addChild(sprite)
-                                        newcomponent3.sprite = sprite
-                                        
-                                        let newPosition = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                                        moveAction.timingMode = .EaseOut
-                                        sprite.alpha = 0
-                                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                                        
-                                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                            withKey:"removing")
-                                        
-                                        
-                                        let componentAType = ComponentType.Enzyme
-                                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                                        componentsLayer.addChild(spriteA)
-                                        componentA.sprite = spriteA
-                                        
-                                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                                        moveActionA.timingMode = .EaseOut
-                                        spriteA.alpha = 0
-                                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                                        
-                                        let componentBType = ComponentType.Activator
-                                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                                        componentsLayer.addChild(spriteB)
-                                        componentB.sprite = spriteB
-                                        
-                                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                                        moveActionB.timingMode = .EaseOut
-                                        spriteB.alpha = 0
-                                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                                        
-                                        let componentCType = ComponentType.Activator
-                                        let componentC = Component(column: newcomponent2.column, row: newcomponent2.row, componentType: componentCType)
-                                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                                        spriteC.position = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        componentsLayer.addChild(spriteC)
-                                        componentC.sprite = spriteC
-                                        
-                                        let newPositionC = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                                        moveActionC.timingMode = .EaseOut
-                                        spriteC.alpha = 0
-                                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                                        
-                                        let componentDType = ComponentType.Substrate
-                                        let componentD = Component(column: othercomponent2.column, row: othercomponent2.row, componentType: componentDType)
-                                        let spriteD = SKSpriteNode(imageNamed: componentD.componentType.spriteName)
-                                        spriteD.position = pointForColumn(othercomponent2.column, row: othercomponent2.row)
-                                        componentsLayer.addChild(spriteD)
-                                        componentD.sprite = spriteD
-                                        
-                                        let newPositionD = pointForColumn(othercomponent2.column, row: othercomponent2.row)
-                                        let moveActionD = SKAction.moveTo(newPositionD, duration: 0.3)
-                                        moveActionD.timingMode = .EaseOut
-                                        spriteD.alpha = 0
-                                        spriteD.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionD])]))
-                                    }
-                                        
-                                    else {
-                                        
-                                        let componentAType = ComponentType.Enzyme
-                                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                                        componentsLayer.addChild(spriteA)
-                                        componentA.sprite = spriteA
-                                        
-                                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                                        moveActionA.timingMode = .EaseOut
-                                        spriteA.alpha = 0
-                                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                                        
-                                        let componentBType = ComponentType.Activator
-                                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                                        componentsLayer.addChild(spriteB)
-                                        componentB.sprite = spriteB
-                                        
-                                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                                        moveActionB.timingMode = .EaseOut
-                                        spriteB.alpha = 0
-                                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                                        
-                                        let componentCType = ComponentType.Activator
-                                        let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                                        spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                                        componentsLayer.addChild(spriteC)
-                                        componentC.sprite = spriteC
-                                        
-                                        let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                                        moveActionC.timingMode = .EaseOut
-                                        spriteC.alpha = 0
-                                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                                    }
-                                }
-                                    
-                                else {
-                                    self.revert(component1, component2: component2)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                
-                if newcomponent.row != NumRows - 1 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column, row: newcomponent.row + 1) {
-                        if othercomponent.componentType == ComponentType.Activator {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_two_activators
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            
-                            if newcomponent2.row != NumRows - 1 {
-                                if let othercomponent2 = level.componentAtColumn(newcomponent2.column, row: newcomponent2.row + 1) {
-                                    if othercomponent2.componentType == ComponentType.Substrate {
-                                        if let sprite = newcomponent2.sprite {
-                                            //if sprite.actionForKey("removing") == nil {
-                                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                            scaleAction.timingMode = .EaseOut
-                                            sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                                withKey:"removing")
-                                            //}
-                                        }
-                                        
-                                        if let sprite2 = othercomponent2.sprite {
-                                            //if sprite2.actionForKey("removing") == nil {
-                                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                            scaleAction.timingMode = .EaseOut
-                                            sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                                withKey:"removing")
-                                            //}
-                                        }
-                                        
-                                        let newcomponentType3 = ComponentType.Enzyme_with_2_activators_and_substrate
-                                        let newcomponent3 = Component(column: newcomponent2.column, row: newcomponent2.row, componentType: newcomponentType3)
-                                        let sprite = SKSpriteNode(imageNamed: newcomponent3.componentType.spriteName)
-                                        sprite.position = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        componentsLayer.addChild(sprite)
-                                        newcomponent3.sprite = sprite
-                                        
-                                        let newPosition = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                                        moveAction.timingMode = .EaseOut
-                                        sprite.alpha = 0
-                                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                                        
-                                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                            withKey:"removing")
-                                        
-                                        
-                                        let componentAType = ComponentType.Enzyme
-                                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                                        componentsLayer.addChild(spriteA)
-                                        componentA.sprite = spriteA
-                                        
-                                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                                        moveActionA.timingMode = .EaseOut
-                                        spriteA.alpha = 0
-                                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                                        
-                                        let componentBType = ComponentType.Activator
-                                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                                        componentsLayer.addChild(spriteB)
-                                        componentB.sprite = spriteB
-                                        
-                                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                                        moveActionB.timingMode = .EaseOut
-                                        spriteB.alpha = 0
-                                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                                        
-                                        let componentCType = ComponentType.Activator
-                                        let componentC = Component(column: newcomponent2.column, row: newcomponent2.row, componentType: componentCType)
-                                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                                        spriteC.position = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        componentsLayer.addChild(spriteC)
-                                        componentC.sprite = spriteC
-                                        
-                                        let newPositionC = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                                        moveActionC.timingMode = .EaseOut
-                                        spriteC.alpha = 0
-                                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                                        
-                                        let componentDType = ComponentType.Substrate
-                                        let componentD = Component(column: othercomponent2.column, row: othercomponent2.row, componentType: componentDType)
-                                        let spriteD = SKSpriteNode(imageNamed: componentD.componentType.spriteName)
-                                        spriteD.position = pointForColumn(othercomponent2.column, row: othercomponent2.row)
-                                        componentsLayer.addChild(spriteD)
-                                        componentD.sprite = spriteD
-                                        
-                                        let newPositionD = pointForColumn(othercomponent2.column, row: othercomponent2.row)
-                                        let moveActionD = SKAction.moveTo(newPositionD, duration: 0.3)
-                                        moveActionD.timingMode = .EaseOut
-                                        spriteD.alpha = 0
-                                        spriteD.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionD])]))
-                                    }
-                                        
-                                    else {
-                                        
-                                        let componentAType = ComponentType.Enzyme
-                                        let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                                        let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                                        spriteA.position = pointForColumn(component1.column, row: component1.row)
-                                        componentsLayer.addChild(spriteA)
-                                        componentA.sprite = spriteA
-                                        
-                                        let newPositionA = pointForColumn(component1.column, row: component1.row)
-                                        let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                                        moveActionA.timingMode = .EaseOut
-                                        spriteA.alpha = 0
-                                        spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                                        
-                                        let componentBType = ComponentType.Activator
-                                        let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                                        let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                                        spriteB.position = pointForColumn(component2.column, row: component2.row)
-                                        componentsLayer.addChild(spriteB)
-                                        componentB.sprite = spriteB
-                                        
-                                        let newPositionB = pointForColumn(component2.column, row: component2.row)
-                                        let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                                        moveActionB.timingMode = .EaseOut
-                                        spriteB.alpha = 0
-                                        spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                                        
-                                        let componentCType = ComponentType.Activator
-                                        let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                                        let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                                        spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                                        componentsLayer.addChild(spriteC)
-                                        componentC.sprite = spriteC
-                                        
-                                        let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                                        let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                                        moveActionC.timingMode = .EaseOut
-                                        spriteC.alpha = 0
-                                        spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                                    }
-                                }
-                                    
-                                else {
-                                    self.revert(component1, component2: component2)
-                                }
-                            }
-                        }
-                    }
-                }
-            
-            
-                if newcomponent.row != 0 {
-                    if let othercomponent = level.componentAtColumn(newcomponent.column, row: newcomponent.row - 1) {
-                        if othercomponent.componentType == ComponentType.Activator {
-                            if let sprite = newcomponent.sprite {
-                                //if sprite.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            
-                            if let sprite2 = othercomponent.sprite {
-                                //if sprite2.actionForKey("removing") == nil {
-                                let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                scaleAction.timingMode = .EaseOut
-                                sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                    withKey:"removing")
-                                //}
-                            }
-                            let newcomponentType2 = ComponentType.Enzyme_with_two_activators
-                            let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: newcomponentType2)
-                            let sprite = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                            sprite.position = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            componentsLayer.addChild(sprite)
-                            newcomponent2.sprite = sprite
-                            
-                            let newPosition = pointForColumn(newcomponent.column, row: newcomponent.row)
-                            let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                            moveAction.timingMode = .EaseOut
-                            sprite.alpha = 0
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                            
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                withKey:"removing")
-                            
-                            if newcomponent2.row != 0 {
-                            if let othercomponent2 = level.componentAtColumn(newcomponent2.column, row: newcomponent2.row - 1) {
-                                if othercomponent2.componentType == ComponentType.Substrate {
-                                    if let sprite = newcomponent2.sprite {
-                                        //if sprite.actionForKey("removing") == nil {
-                                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                        scaleAction.timingMode = .EaseOut
-                                        sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                            withKey:"removing")
-                                        //}
-                                    }
-                                    
-                                    if let sprite2 = othercomponent2.sprite {
-                                        //if sprite2.actionForKey("removing") == nil {
-                                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                        scaleAction.timingMode = .EaseOut
-                                        sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
-                                            withKey:"removing")
-                                        //}
-                                    }
-                                    
-                                    let newcomponentType3 = ComponentType.Enzyme_with_2_activators_and_substrate
-                                    let newcomponent3 = Component(column: newcomponent2.column, row: newcomponent2.row, componentType: newcomponentType3)
-                                    let sprite = SKSpriteNode(imageNamed: newcomponent3.componentType.spriteName)
-                                    sprite.position = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                    componentsLayer.addChild(sprite)
-                                    newcomponent3.sprite = sprite
-                                    
-                                    let newPosition = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                    let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                                    moveAction.timingMode = .EaseOut
-                                    sprite.alpha = 0
-                                    sprite.runAction(SKAction.sequence([SKAction.waitForDuration(1.5), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
-                                    
-                                    let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                                    sprite.runAction(SKAction.sequence([SKAction.waitForDuration(0.25, withRange: 5), scaleAction, SKAction.removeFromParent()]),
-                                        withKey:"removing")
-                                    
-                                    
-                                    let componentAType = ComponentType.Enzyme
-                                    let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                                    let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                                    spriteA.position = pointForColumn(component1.column, row: component1.row)
-                                    componentsLayer.addChild(spriteA)
-                                    componentA.sprite = spriteA
-                                    
-                                    let newPositionA = pointForColumn(component1.column, row: component1.row)
-                                    let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                                    moveActionA.timingMode = .EaseOut
-                                    spriteA.alpha = 0
-                                    spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                                    
-                                    let componentBType = ComponentType.Activator
-                                    let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                                    let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                                    spriteB.position = pointForColumn(component2.column, row: component2.row)
-                                    componentsLayer.addChild(spriteB)
-                                    componentB.sprite = spriteB
-                                    
-                                    let newPositionB = pointForColumn(component2.column, row: component2.row)
-                                    let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                                    moveActionB.timingMode = .EaseOut
-                                    spriteB.alpha = 0
-                                    spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                                    
-                                    let componentCType = ComponentType.Activator
-                                    let componentC = Component(column: newcomponent2.column, row: newcomponent2.row, componentType: componentCType)
-                                    let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                                    spriteC.position = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                    componentsLayer.addChild(spriteC)
-                                    componentC.sprite = spriteC
-                                    
-                                    let newPositionC = pointForColumn(newcomponent2.column, row: newcomponent2.row)
-                                    let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                                    moveActionC.timingMode = .EaseOut
-                                    spriteC.alpha = 0
-                                    spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                                
-                                    let componentDType = ComponentType.Substrate
-                                    let componentD = Component(column: othercomponent2.column, row: othercomponent2.row, componentType: componentDType)
-                                    let spriteD = SKSpriteNode(imageNamed: componentD.componentType.spriteName)
-                                    spriteD.position = pointForColumn(othercomponent2.column, row: othercomponent2.row)
-                                    componentsLayer.addChild(spriteD)
-                                    componentD.sprite = spriteD
-                                    
-                                    let newPositionD = pointForColumn(othercomponent2.column, row: othercomponent2.row)
-                                    let moveActionD = SKAction.moveTo(newPositionD, duration: 0.3)
-                                    moveActionD.timingMode = .EaseOut
-                                    spriteD.alpha = 0
-                                    spriteD.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionD])]))
-                                }
-                                    
-                                else {
-                                    
-                                    let componentAType = ComponentType.Enzyme
-                                    let componentA = Component(column: component1.column, row: component1.row, componentType: componentAType)
-                                    let spriteA = SKSpriteNode(imageNamed: componentA.componentType.spriteName)
-                                    spriteA.position = pointForColumn(component1.column, row: component1.row)
-                                    componentsLayer.addChild(spriteA)
-                                    componentA.sprite = spriteA
-                            
-                                    let newPositionA = pointForColumn(component1.column, row: component1.row)
-                                    let moveActionA = SKAction.moveTo(newPositionA, duration: 0.3)
-                                    moveActionA.timingMode = .EaseOut
-                                    spriteA.alpha = 0
-                                    spriteA.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionA])]))
-                            
-                                    let componentBType = ComponentType.Activator
-                                    let componentB = Component(column: component2.column, row: component2.row, componentType: componentBType)
-                                    let spriteB = SKSpriteNode(imageNamed: componentB.componentType.spriteName)
-                                    spriteB.position = pointForColumn(component2.column, row: component2.row)
-                                    componentsLayer.addChild(spriteB)
-                                    componentB.sprite = spriteB
-                            
-                                    let newPositionB = pointForColumn(component2.column, row: component2.row)
-                                    let moveActionB = SKAction.moveTo(newPositionB, duration: 0.3)
-                                    moveActionB.timingMode = .EaseOut
-                                    spriteB.alpha = 0
-                                    spriteB.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionB])]))
-                            
-                                    let componentCType = ComponentType.Activator
-                                    let componentC = Component(column: othercomponent.column, row: othercomponent.row, componentType: componentCType)
-                                    let spriteC = SKSpriteNode(imageNamed: componentC.componentType.spriteName)
-                                    spriteC.position = pointForColumn(othercomponent.column, row: othercomponent.row)
-                                    componentsLayer.addChild(spriteC)
-                                    componentC.sprite = spriteC
-                            
-                                    let newPositionC = pointForColumn(othercomponent.column, row: othercomponent.row)
-                                    let moveActionC = SKAction.moveTo(newPositionC, duration: 0.3)
-                                    moveActionC.timingMode = .EaseOut
-                                    spriteC.alpha = 0
-                                    spriteC.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveActionC])]))
-                                }
-                            }
-                            
-                        else {
-                            self.revert(component1, component2: component2)
-                        }
-                            }
-                        }
-                    }
-                }
+                //Enzyme and Activator
+                components(component1, component2: component2, componentType: ComponentType.Enzyme, newcomponentType: ComponentType.Activator)
             }
         }
     }
     
-    /*func trySwapHorizontal(horzDelta: Int, vertical vertDelta: Int) {
-        let toColumn = swipeFromColumn! + horzDelta
-        let toRow = swipeFromRow! + vertDelta
+    // Uses componentsprite to create a sprite at position component2 of componentType and a sprite at position component1 of the newcomponentType
+    func components(component1: Component, component2: Component, componentType: ComponentType, newcomponentType: ComponentType) {
         
-        if toColumn < 0 || toColumn >= NumColumns { return }
-        if toRow < 0 || toRow >= NumRows {return}
+        componentsprite(component2, componentType: componentType)
+        componentsprite(component1, componentType: newcomponentType)
         
-        if let toComponent = level.componentAtColumn(toColumn, row: toRow) {
-            if let fromComponent = level.componentAtColumn(swipeFromColumn!, row: swipeFromRow!) {
-                if let handler = swipeHandler {
-                    let swap = Swap(componentA: fromComponent, componentB: toComponent)
-                    handler(swap)
-                }
-            }
-        }
-    }*/
-
-    func animateSwap(swap: Swap, completion: () -> ()) {
-        let spriteA = swap.componentA.sprite!
-        let spriteB = swap.componentB.sprite!
-        
-        spriteA.zPosition = 90
-        spriteB.zPosition = 100
-        
-        let Duration: NSTimeInterval = 0.5
-        
-        let moveA = SKAction.moveTo(spriteB.position, duration: Duration)
-        moveA.timingMode = .EaseOut
-        spriteA.runAction(moveA, completion: completion)
-        
-        //let moveB = SKAction.moveTo(spriteB.position, duration: Duration)
-        let moveB = SKAction.moveTo(spriteA.position, duration: Duration)
-        moveB.timingMode = .EaseOut
-        spriteB.runAction(moveB)
-    }
-    
-    /*func nosubstrates() {
-    
-            for column in 0..<NumColumns {
-                for row in 0..<NumRows{
-                    if let component = level.componentAtColumn(column, row: row) {
-                        if component.componentType == ComponentType.Enzyme {
-        
-                        for row in 0..<NumRows {
-                            for column in 0..<NumColumns {
-                                swipeFromColumn = column
-                                swipeFromRow = row
-                                
-                                var horzDelta = 0, vertDelta = 0
-                                if row == 0 && column == 0 {
-                                    var dataConverter = Int(arc4random_uniform(2)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = 1
-                                    }
-                                    else if dataConverter == 2 {
-                                        vertDelta = 1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                                
-                                if row == NumRows - 1 && column == NumColumns - 1 {
-                                    var dataConverter = Int(arc4random_uniform(2)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = -1
-                                    }
-                                    else if dataConverter == 2 {
-                                        vertDelta = -1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                                
-                                if row == 0 && column == NumColumns - 1 {
-                                    var dataConverter = Int(arc4random_uniform(2)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = -1
-                                    }
-                                    else if dataConverter == 2 {
-                                        vertDelta = 1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                                
-                                if row == NumRows - 1 && column == 0 {
-                                    var dataConverter = Int(arc4random_uniform(2)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = 1
-                                    }
-                                    else if dataConverter == 2 {
-                                        vertDelta = -1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                                    
-                                else if row == 0 {
-                                    var dataConverter = Int(arc4random_uniform(3)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = -1
-                                    }
-                                    else if dataConverter == 2 {
-                                        horzDelta = 1
-                                    }
-                                    else if dataConverter == 3 {
-                                        vertDelta = 1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                                    
-                                else if row == NumRows - 1 {
-                                    var dataConverter = Int(arc4random_uniform(3)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = -1
-                                    }
-                                    else if dataConverter == 2 {
-                                        horzDelta = 1
-                                    }
-                                    else if dataConverter == 3 {
-                                        vertDelta = -1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                                    
-                                else if column == 0 {
-                                    var dataConverter = Int(arc4random_uniform(3)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = 1
-                                    }
-                                    else if dataConverter == 2 {
-                                        vertDelta = -1
-                                    }
-                                    else if dataConverter == 3 {
-                                        vertDelta = 1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                                    
-                                else if column == NumColumns - 1 {
-                                    var dataConverter = Int(arc4random_uniform(3)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = -1
-                                    }
-                                    else if dataConverter == 2 {
-                                        vertDelta = -1
-                                    }
-                                    else if dataConverter == 3 {
-                                        vertDelta = 1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                                    
-                                else {
-                                    var dataConverter = Int(arc4random_uniform(4)+1)
-                                    if dataConverter == 1 {
-                                        horzDelta = -1
-                                    }
-                                    else if dataConverter == 2 {
-                                        horzDelta = 1
-                                    }
-                                    else if dataConverter == 3 {
-                                        vertDelta = -1
-                                    }
-                                    else if dataConverter == 4 {
-                                        vertDelta = 1
-                                    }
-                                    
-                                    trySwapHorizontal(horzDelta, vertical: vertDelta)
-                                }
-                            }
-                        }
-                    }
-                }
-                    
-            }
-        }
-    }*/
-    
-    func animateRxnComponents(rxns: Set<Rxn>, completion: () -> ()) {
-        for rxn in rxns {
-            for component in rxn.components {
-                /*if component.componentType == ComponentType.Enzyme {
-                    let component1 = component
-                    if component.componentType == ComponentType.Substrate {
-                        let component2 = component
-                
-                if component.componentType == ComponentType.Enzyme {
-                    let component1 = Component(column: component.column, row: component.row, componentType: ComponentType.Enzyme)
-                        if component.componentType == ComponentType.Substrate {
-                            let component2 = Component(column: component.column, row: component.row, componentType: ComponentType.Substrate)
-                            //level.removepieces(component1, component2: component2)
-                            self.removecomponents(component1, component2: component2)
-                            self.combinedcomponent(component1, component2: component2)
-                            self.revert(component1, component2: component2)
-                    }
-                }
-            }
-        }
-    }*/
-             
-               if component.componentType == ComponentType.Enzyme {
-                    let component1 = Component(column: component.column, row: component.row, componentType: ComponentType.Enzyme)
-                  if let sprite1 = component1.sprite {
-                    //if sprite1.actionForKey("removing") == nil {
-                        let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                        scaleAction.timingMode = .EaseOut
-                        sprite1.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]), withKey: "removing")
-                        
-
-                
-                if component.componentType != ComponentType.Enzyme {
-                    let component2 = Component(column: component.column, row: component.row, componentType: ComponentType.Substrate)
-                    
-                    if let sprite2 = component2.sprite {
-                        //if sprite2.actionForKey("removing") == nil {
-                            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
-                            scaleAction.timingMode = .EaseOut
-                            sprite2.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]), withKey: "removing")
-                        
-                        
-                    
-                
-
-                
-                let time = 0.5
-                let delay = 0.5
-                
-                let newcomponentType = ComponentType.ESComplex
-                let newcomponent = Component(column: component1.column, row: component1.row, componentType: newcomponentType)
-                
-                let sprite3 = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
-                sprite3.position = pointForColumn(component1.column, row: component1.row)
-                componentsLayer.addChild(sprite3)
-                newcomponent.sprite = sprite3
-                
-                let newPosition = pointForColumn(component1.column, row: component1.row)
-                let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
-                moveAction.timingMode = .EaseOut
-                sprite3.alpha = 0
-                sprite3.runAction(SKAction.sequence([SKAction.fadeInWithDuration(0.05), moveAction]))
-                
-                
-                let scaleAction3 = SKAction.scaleTo(0.1, duration: 0.3)
-                sprite3.runAction(SKAction.sequence([SKAction.waitForDuration(2), scaleAction3, SKAction.removeFromParent()]),
-                    withKey:"removing")
-                    
-                    
-                        let componentType = ComponentType.Enzyme
-                        let component = Component(column: component1.column, row: component1.row, componentType: componentType)
-                        let sprite1 = SKSpriteNode(imageNamed: component.componentType.spriteName)
-                        sprite1.position = pointForColumn(component1.column, row: component1.row)
-                        componentsLayer.addChild(sprite1)
-                        component.sprite = sprite1
-                        
-                        let newPosition1 = pointForColumn(component1.column, row: component1.row)
-                        let moveAction1 = SKAction.moveTo(newPosition1, duration: 0.3)
-                        moveAction1.timingMode = .EaseOut
-                        sprite1.alpha = 0
-                        sprite1.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction1])]))
-                        
-                        let newcomponent2Type = ComponentType.Product
-                        let newcomponent2 = Component(column: component2.column, row: component2.row, componentType: newcomponent2Type)
-                        let sprite4 = SKSpriteNode(imageNamed: newcomponent2.componentType.spriteName)
-                        sprite4.position = pointForColumn(component2.column, row: component2.row)
-                        componentsLayer.addChild(sprite4)
-                        newcomponent2.sprite = sprite4
-                        
-                        let newPosition2 = pointForColumn(component2.column, row: component2.row)
-                        let moveAction2 = SKAction.moveTo(newPosition2, duration: 0.3)
-                        moveAction2.timingMode = .EaseOut
-                        sprite4.alpha = 0
-                        sprite4.runAction(SKAction.sequence([SKAction.waitForDuration(3), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction2])]))
-                    }
-                    }
-                        }
-                    }
-                    
-                }
-            //}
-            //}
-
-        }
-        runAction(SKAction.waitForDuration(0.3), completion: completion)
-
     }
 
+    // Creates sprite for defined component and type
+    func componentsprite(component: Component, componentType: ComponentType) {
+        let newcomponent = Component(column: component.column, row: component.row, componentType: componentType)
+        let sprite = SKSpriteNode(imageNamed: newcomponent.componentType.spriteName)
+        sprite.position = pointForColumn(component.column, row: component.row)
+        componentsLayer.addChild(sprite)
+        component.sprite = sprite
+        
+        let newPosition = pointForColumn(component.column, row: component.row)
+        let moveAction = SKAction.moveTo(newPosition, duration: 0.3)
+        moveAction.timingMode = .EaseOut
+        sprite.alpha = 0
+        sprite.runAction(SKAction.sequence([SKAction.waitForDuration(10), SKAction.group([SKAction.fadeInWithDuration(0.25), moveAction])]))
+    }
+    
+    // Noncompetitive Inhibitor Case
+    func noncompetitiveinhibitor(component1: Component, component2: Component) {
+        // Creates the sprite for an enzyme with a noncompetitive inhibitor, then removes the sprite after a specified time
+        combinedpiece(component1, newcomponentType: ComponentType.Enzyme_with_Noncompetitive_Inhibitor, appear: 1, disappear: 3)
 
-    
-    
+        let newcomponent = Component(column: component1.column, row: component1.row, componentType: ComponentType.Enzyme_with_Noncompetitive_Inhibitor)
 
-
-    
-    
-    func nosubstrates() {
-    
-        for column in 0..<NumColumns {
-            for row in 0..<NumRows{
-                if let component = level.componentAtColumn(column, row: row) {
-                    if component.componentType == ComponentType.Substrate {
-    
-                        self.direction()
-                    }
-                }
-            }
+        // If there are substrates then the function proceeds to the ncis function to check for nearby substrates
+        if subs() {
+            ncis(component1, component2: component2, newcomponent: newcomponent)
+        }
+        
+        // If there are no substrates, only enzymes and noncompetitive inhibitors, the function proceeds to revert back to enzyme and noncompetitive inhibitor components
+        else {
+            revertcomponents(component1, component2: component2)
         }
     }
     
-  
-
+    // Based on the component's location, randomly decides a direction to check the component next to it, above it, or below it.
+    // Checkforsubstrate then checks whether or not that component is a substrate.
+    func ncis(component1: Component, component2: Component, newcomponent: Component) {
+        var horzDelta = 0, vertDelta = 0
+        
+        if newcomponent.row == 0 && newcomponent.column == 0 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = 1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column == NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == 0 && newcomponent.column == NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = 1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column == 0 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == 0 && newcomponent.column != 0 && newcomponent.column != NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column != 0 && newcomponent.column != NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = -1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.column == 0 && newcomponent.row != 0 && newcomponent.row != NumRows - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.column == NumColumns - 1 && newcomponent.row != 0 && newcomponent.row != NumRows - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else {
+            let dataConverter = Int(arc4random_uniform(4)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = -1
+            }
+            else if dataConverter == 4 {
+                vertDelta = 1
+            }
+            checkforsubstrate(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+    }
     
+    // Determines if othercomponent is a substrate or not
+    func checkforsubstrate(component1: Component, component2: Component, newcomponent: Component, horzDelta: Int, vertDelta: Int) {
+        if let othercomponent = level.componentAtColumn(newcomponent.column + horzDelta, row: newcomponent.row + vertDelta) {
+            // If othercomponent is a substrate, proceed to nci
+            if othercomponent.componentType == ComponentType.Substrate {
+                nci(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent)
+            }
+            // If othercomponent is not a substrate, revert back to components enzyme and substrate
+            else {
+                 revertcomponents(component1, component2: component2)
+            }
+        }
+        
+        // If othercomponent is nil, revert back to components enzyme and substrate
+        else {
+            revertcomponents(component1, component2: component2)
+        }
+    }
+    
+    // Creates the sprite for enzyme with noncompetitive inhibitor and substrate and then reverts back
+    func nci(component1: Component, component2: Component, newcomponent: Component, othercomponent: Component) {
+        // The substrate sprite is removed
+        remove(othercomponent)
+        
+        // A new sprite is created for an enzyme with noncompetitive inhibitor and substrate, then removed after a specified time
+        combinedpiece(othercomponent, newcomponentType: ComponentType.Enzyme_with_Noncompetitive_Inhibitor_and_substrate, appear: 4, disappear: 6)
+
+        //Reverts to the original components, enzyme, noncompetitive inhibitor, and substrate
+        level.components(component1, component2: component2)
+        componentsprite(component2, componentType: ComponentType.Enzyme)
+        componentsprite(component1, componentType: ComponentType.Noncompetitive_Inhibitor)
+        componentsprite(othercomponent, componentType: ComponentType.Substrate)
+        
+    }
+    
+    // Removes sprite
+    func remove(component:Component) {
+        if let sprite = component.sprite {
+            let scaleAction = SKAction.scaleTo(0.1, duration: 0.3)
+            scaleAction.timingMode = .EaseOut
+            sprite.runAction(SKAction.sequence([scaleAction, SKAction.removeFromParent()]),
+                withKey:"removing")
+        }
+    }
+    
+    // Activator Case
+    func activator(component1: Component, component2: Component) {
+        // Creates the sprite for an enzyme with a single activator, then removes the sprite after a specified time
+        combinedpiece(component2, newcomponentType: ComponentType.Enzyme_with_one_activator, appear: 1, disappear: 3)
+        
+        let newcomponent = Component(column: component2.column, row: component2.row, componentType: ComponentType.Enzyme_with_one_activator)
+        
+        // If there are substrates, proceed to the asa function to check for nearby substrates
+        if subs() {
+            asa(component1, component2: component2, newcomponent: newcomponent)
+        }
+        // If there are no substrates, only enzymes and activators, revert back to enzyme and activator components
+        else {
+            revertcomponents(component1, component2: component2)
+        }
+    }
+    
+    // Based on the component's location, randomly decides a direction to check the component next to it, above it, or below it.
+    // Substrateoractivator then checks if the component is either a substrate, activator, or neither.
+    func asa(component1: Component, component2: Component, newcomponent: Component) {
+        var horzDelta = 0, vertDelta = 0
+        
+        if newcomponent.row == 0 && newcomponent.column == 0 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = 1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column == NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == 0 && newcomponent.column == NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = 1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column == 0 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == 0 && newcomponent.column != 0 && newcomponent.column != NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column != 0 && newcomponent.column != NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = -1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.column == 0 && newcomponent.row != 0 && newcomponent.row != NumRows - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.column == NumColumns - 1 && newcomponent.row != 0 && newcomponent.row != NumRows - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else {
+            let dataConverter = Int(arc4random_uniform(4)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = -1
+            }
+            else if dataConverter == 4 {
+                vertDelta = 1
+            }
+            substrateoractivator(component1, component2: component2, newcomponent: newcomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+    }
+    
+    // Determines if othercomponent is a substrate, activator or neither
+    func substrateoractivator(component1: Component, component2: Component, newcomponent: Component, horzDelta: Int, vertDelta: Int) {
+        if let othercomponent = level.componentAtColumn(newcomponent.column + horzDelta, row: newcomponent.row + vertDelta) {
+            if othercomponent.componentType == ComponentType.Substrate {
+                // If othercomponent is a substrate then it is removed
+                remove(othercomponent)
+                
+                // A new sprite is created for an enzyme with one activator and a substrate, then removed after a specified time
+                combinedpiece(newcomponent, newcomponentType: ComponentType.Enzyme_with_one_activator_and_substrate, appear: 4, disappear: 6)
+                
+                let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: ComponentType.Enzyme_with_one_activator_and_substrate)
+                
+                // The function then proceeds to activatorcheck that determines if a nearby component is an activator
+                activatorcheck(component1, component2: component2, newcomponent: newcomponent2, othercomponent: othercomponent)
+            }
+                
+            else if othercomponent.componentType == ComponentType.Activator {
+                // If other component is an activator then it is removed
+                remove(othercomponent)
+                
+                // A new sprite is created for an enzyme with two activators, then removed after a specified time
+                combinedpiece(newcomponent, newcomponentType: ComponentType.Enzyme_with_two_activators, appear: 4, disappear: 6)
+                
+                let newcomponent2 = Component(column: newcomponent.column, row: newcomponent.row, componentType: ComponentType.Enzyme_with_two_activators)
+                
+                // The function then proceeds to substratecheck that determines if a nearby component is a substrate
+                substratecheck(component1, component2: component2, newcomponent: newcomponent2, othercomponent: othercomponent)
+            }
+            
+            // If othercomponent is neither a substrate nor an activator then the function proceeds to revert back to the original components of an enzyme and an activator
+            else {
+                revertcomponents(component1, component2: component2)
+            }
+        }
+        
+        //If othercomponent is nil, revert back to the original components of an enzyme and an activator
+        else {
+            revertcomponents(component1, component2: component2)
+        }
+    }
+
+    // Activatorcheck randomly decides a direction to check the component next to it, above it, or below it. The direction is then used as the input for activatorcase
+    func activatorcheck(component1: Component, component2: Component, newcomponent: Component, othercomponent: Component) {
+        
+        var horzDelta = 0, vertDelta = 0
+        
+        if newcomponent.row == 0 && newcomponent.column == 0 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = 1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column == NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == 0 && newcomponent.column == NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = 1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column == 0 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == 0 && newcomponent.column != 0 && newcomponent.column != NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column != 0 && newcomponent.column != NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = -1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.column == 0 && newcomponent.row != 0 && newcomponent.row != NumRows - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.column == NumColumns - 1 && newcomponent.row != 0 && newcomponent.row != NumRows - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else {
+            let dataConverter = Int(arc4random_uniform(4)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = -1
+            }
+            else if dataConverter == 4 {
+                vertDelta = 1
+            }
+            activatorcase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+    }
+
+    // Determines if othercomponent2 is an activator or not
+    func activatorcase(component1: Component, component2: Component, newcomponent: Component, othercomponent: Component, horzDelta: Int, vertDelta: Int) {
+        if let othercomponent2 = level.componentAtColumn(newcomponent.column + horzDelta, row: newcomponent.row + vertDelta) {
+            if othercomponent2.componentType == ComponentType.Activator {
+                // If othercomponent2 is an activator then the function then proceeds to easa
+                easa(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, othercomponent2: othercomponent2 )
+            }
+            
+            // If othercomponent2 is not an activator then the function proceeds to revert back to components enzyme, activator, and substrate
+            else {
+                level.components(component1, component2: component2)
+                componentsprite(component2, componentType: ComponentType.Enzyme)
+                componentsprite(component1, componentType: ComponentType.Activator)
+                componentsprite(othercomponent, componentType: ComponentType.Substrate)
+            }
+        }
+        
+        // If othercomponent2 is nil then the function proceeds to revert back to components enzyme, activator, and substrate
+        else {
+            level.components(component1, component2: component2)
+            componentsprite(component2, componentType: ComponentType.Enzyme)
+            componentsprite(component1, componentType: ComponentType.Activator)
+            componentsprite(othercomponent, componentType: ComponentType.Substrate)
+        }
+    }
+    
+    // Creates the sprite for enzyme with two activators and substrate and then reverts back
+    func easa(component1: Component, component2: Component, newcomponent: Component, othercomponent: Component, othercomponent2: Component) {
+        // The activator sprite is removed
+        remove(othercomponent2)
+        
+        // A new sprite is created for an enzyme with two activators and a substrate, then removed after a specified time
+        combinedpiece(newcomponent, newcomponentType: ComponentType.Enzyme_with_2_activators_and_substrate, appear: 7, disappear: 9)
+        
+        // The function then reverts to the original components, enzyme, activator, substrate, and activator
+        level.components(component1, component2: component2)
+        componentsprite(component2, componentType: ComponentType.Enzyme)
+        componentsprite(component1, componentType: ComponentType.Activator)
+        componentsprite(othercomponent, componentType: ComponentType.Substrate)
+        componentsprite(othercomponent2, componentType: ComponentType.Activator)
+    }
+    
+    // Substratecheck randomly decides a direction to check the component next to it, above it, or below it. The direction is then used as the input for substratecase
+    func substratecheck(component1: Component, component2: Component, newcomponent: Component, othercomponent: Component) {
+        var horzDelta = 0, vertDelta = 0
+        
+        if newcomponent.row == 0 && newcomponent.column == 0 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = 1
+            }
+            substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column == NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == 0 && newcomponent.column == NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = 1
+            }
+            substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column == 0 {
+            let dataConverter = Int(arc4random_uniform(2)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+           substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == 0 && newcomponent.column != 0 && newcomponent.column != NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.row == NumRows - 1 && newcomponent.column != 0 && newcomponent.column != NumColumns - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = -1
+            }
+            substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.column == 0 && newcomponent.row != 0 && newcomponent.row != NumRows - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = 1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else if newcomponent.column == NumColumns - 1 && newcomponent.row != 0 && newcomponent.row != NumRows - 1 {
+            let dataConverter = Int(arc4random_uniform(3)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                vertDelta = -1
+            }
+            else if dataConverter == 3 {
+                vertDelta = 1
+            }
+            substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+            
+        else {
+            let dataConverter = Int(arc4random_uniform(4)+1)
+            if dataConverter == 1 {
+                horzDelta = -1
+            }
+            else if dataConverter == 2 {
+                horzDelta = 1
+            }
+            else if dataConverter == 3 {
+                vertDelta = -1
+            }
+            else if dataConverter == 4 {
+                vertDelta = 1
+            }
+            substratecase(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, horzDelta: horzDelta, vertDelta: vertDelta)
+        }
+    }
+    
+    // If othercomponent2 is not an substrate then the function proceeds to revert back to components enzyme, activator, and activator
+    func substratecase(component1: Component, component2: Component, newcomponent: Component, othercomponent: Component, horzDelta: Int, vertDelta: Int) {
+        if let othercomponent2 = level.componentAtColumn(newcomponent.column + horzDelta, row: newcomponent.row + vertDelta) {
+            if othercomponent2.componentType == ComponentType.Substrate {
+                // If othercomponent2 is a substrate then the function then proceeds to e2as
+                e2as(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent, othercomponent2: othercomponent2 )
+            }
+            // If othercomponent2 is not an substrate then the function proceeds to revert back to components enzyme, activator, and activator
+            else {
+                level.components(component1, component2: component2)
+                componentsprite(component2, componentType: ComponentType.Enzyme)
+                componentsprite(component1, componentType: ComponentType.Activator)
+                componentsprite(othercomponent, componentType: ComponentType.Activator)
+            }
+        }
+        
+        // If othercomponent2 is nil then the function proceeds to revert back to components enzyme, activator, and activator
+        else {
+            level.components(component1, component2: component2)
+            componentsprite(component2, componentType: ComponentType.Enzyme)
+            componentsprite(component1, componentType: ComponentType.Activator)
+            componentsprite(othercomponent, componentType: ComponentType.Activator)
+        }
+    }
+    
+    // Creates the sprite for enzyme with two activators and substrate and then reverts back
+    func e2as(component1: Component, component2: Component, newcomponent: Component, othercomponent: Component, othercomponent2: Component)  {
+        // The substrate sprite is removed
+        remove(othercomponent2)
+        
+        // A new sprite is created for an enzyme with two activators and a substrate, then removed after a specified time
+        combinedpiece(newcomponent, newcomponentType: ComponentType.Enzyme_with_2_activators_and_substrate, appear: 7, disappear: 9)
+        
+        // The function then reverts to the original components, enzyme, activator, activator, and substrate
+        level.components(component1, component2: component2)
+        componentsprite(component2, componentType: ComponentType.Enzyme)
+        componentsprite(component1, componentType: ComponentType.Activator)
+        componentsprite(othercomponent, componentType: ComponentType.Activator)
+        componentsprite(othercomponent2, componentType: ComponentType.Substrate)
+    }
 }
+
+
+
+
