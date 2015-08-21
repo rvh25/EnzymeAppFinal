@@ -650,13 +650,13 @@ class GameScene: SKScene {
             if othercomponent.componentType == ComponentType.Substrate {
                 nci(component1, component2: component2, newcomponent: newcomponent, othercomponent: othercomponent)
             }
-            // If othercomponent is not a substrate, revert back to components enzyme and substrate
+            // If othercomponent is not a substrate, revert back to components enzyme and noncompetitive inhibitor
             else {
                  revertcomponents(component1, component2: component2)
             }
         }
         
-        // If othercomponent is nil, revert back to components enzyme and substrate
+        // If othercomponent is nil, revert back to components enzyme and noncompetitive inhibitor
         else {
             revertcomponents(component1, component2: component2)
         }
